@@ -49,24 +49,41 @@ jobs:
           tar jxf "${KWS_DIR}.tar.bz2"
           rm -f "${KWS_DIR}.tar.bz2"
 
-          # Generate custom wake-word tokens for JARVIS
-          python3 -m pip install --upgrade pip sherpa-onnx sentencepiece
-          curl -fSL -o text2token.py \
-            https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/v2.0.3/scripts/text2token.py
+          # Generate custom wake-word tokens for JARVIS using sentencepiece directly
+          python3 -m pip install sentencepiece
+          python3 - << 'PYEOF'
+          import sentencepiece as spm
 
-          printf "HEY JARVIS :1.5 #0.25 @HEY_JARVIS\nOK JARVIS :1.5 #0.25 @OK_JARVIS\nHELLO JARVIS :1.5 #0.25 @HELLO_JARVIS\nJARVIS :1.2 #0.35 @JARVIS\n" > keywords_raw.txt
+          kws_dir = "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01"
+          with open(f"{kws_dir}/tokens.txt", "r", encoding="utf-8") as f:
+              valid_tokens = {line.strip().split()[0] for line in f if line.strip()}
 
-          python3 text2token.py \
-            --text keywords_raw.txt \
-            --tokens "${KWS_DIR}/tokens.txt" \
-            --tokens-type bpe \
-            --bpe-model "${KWS_DIR}/bpe.model" \
-            --output "${KWS_DIR}/keywords.txt"
+          sp = spm.SentencePieceProcessor()
+          sp.load(f"{kws_dir}/bpe.model")
 
-          echo "=== Generated Wake Keywords ==="
-          cat "${KWS_DIR}/keywords.txt"
+          phrases = [
+              ("HEY JARVIS", ":1.5", "#0.25", "@HEY_JARVIS"),
+              ("OK JARVIS", ":1.5", "#0.25", "@OK_JARVIS"),
+              ("HELLO JARVIS", ":1.5", "#0.25", "@HELLO_JARVIS"),
+              ("JARVIS", ":1.2", "#0.35", "@JARVIS"),
+          ]
 
-          rm -f text2token.py keywords_raw.txt
+          lines = []
+          for text, score, thresh, tag in phrases:
+              pieces = sp.encode(text, out_type=str)
+              if not all(p in valid_tokens for p in pieces):
+                  pieces = sp.encode(text.lower(), out_type=str)
+              if all(p in valid_tokens for p in pieces):
+                  lines.append(" ".join(pieces + [score, thresh, tag]))
+              else:
+                  print(f"Skipping {text}, missing tokens: {[p for p in pieces if p not in valid_tokens]}")
+
+          assert lines, "No wake-word keywords could be tokenized!"
+          with open(f"{kws_dir}/keywords.txt", "w", encoding="utf-8") as out:
+              out.write("\n".join(lines) + "\n")
+          print("Generated keywords.txt:\n" + "\n".join(lines))
+          PYEOF
+
           rm -f "${KWS_DIR}/bpe.model" "${KWS_DIR}/keywords_raw.txt" "${KWS_DIR}/README.md"
           rm -f "${KWS_DIR}"/*.int8.onnx
           rm -rf "${KWS_DIR}/test_wavs"
