@@ -123,7 +123,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun startForegroundSafely() {
-        val notification = buildOngoingNotification("Listening for \"Hey Jarvis\"...")
+        val notification = buildOngoingNotification("Listening for \"Hey Anni\"...")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             startForeground(
                 NOTIFICATION_ID,
@@ -151,7 +151,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
 
         return NotificationCompat.Builder(this, JarvisApp.CHANNEL_WAKE_SERVICE)
             .setSmallIcon(R.drawable.ic_mic_notif)
-            .setContentTitle("J.A.R.V.I.S. Shield Active")
+            .setContentTitle("A.N.N.I. Shield Active")
             .setContentText(subtitle)
             .setContentIntent(openIntent)
             .addAction(R.drawable.ic_mic_notif, "Speak Now", listenIntent)
@@ -202,7 +202,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
 
             JarvisRuntimeState.updateMode(
                 AssistantMode.PASSIVE_WAKE,
-                "Say \"Hey Jarvis\" anytime (Lock-Screen Ready)"
+                "Say \"Hey Anni\" anytime (Lock-Screen Ready)"
             )
 
             while (running) {
@@ -210,7 +210,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
                     if (enrollRequested) {
                         enrollRequested = false
                         handleVoiceEnrollmentFlow()
-                        kwsStream.release()
+                        kwsStream?.release()
                         kwsStream = JarvisAudioEngine.createKwsStream()
                         continue
                     }
@@ -223,13 +223,11 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
                         continue
                     }
 
-                    val rec = audioRecord ?: run {
-                        if (!openAudioRecord()) {
-                            Thread.sleep(500)
-                            continue
-                        }
-                        audioRecord!!
+                    if (audioRecord == null && !openAudioRecord()) {
+                        Thread.sleep(500)
+                        continue
                     }
+                    val rec = audioRecord ?: continue
 
                     val readCount = rec.read(shortBuf, 0, shortBuf.size)
                     if (readCount <= 0) {
@@ -298,7 +296,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
 
         JarvisRuntimeState.updateMode(
             AssistantMode.PASSIVE_WAKE,
-            "Say \"Hey Jarvis\" anytime (Lock-Screen Ready)"
+            "Say \"Hey Anni\" anytime (Lock-Screen Ready)"
         )
     }
 
@@ -318,7 +316,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
 
             if (commandSamples.size < JarvisAudioEngine.SAMPLE_RATE / 2) {
                 JarvisRuntimeState.updateMode(AssistantMode.PASSIVE_WAKE, "Nothing heard. Ready.")
-                updateOngoingNotification("Listening for \"Hey Jarvis\"...")
+                updateOngoingNotification("Listening for \"Hey Anni\"...")
                 return
             }
 
@@ -391,7 +389,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
 
             if (recognizedText.isNullOrBlank()) {
                 JarvisRuntimeState.updateMode(AssistantMode.PASSIVE_WAKE, "Didn't catch that. Ready.")
-                updateOngoingNotification("Listening for \"Hey Jarvis\"...")
+                updateOngoingNotification("Listening for \"Hey Anni\"...")
                 return
             }
 
@@ -418,23 +416,23 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
 
         JarvisRuntimeState.updateMode(
             AssistantMode.PASSIVE_WAKE,
-            "Say \"Hey Jarvis\" anytime (Lock-Screen Ready)"
+            "Say \"Hey Anni\" anytime (Lock-Screen Ready)"
         )
-        updateOngoingNotification("Listening for \"Hey Jarvis\"...")
+        updateOngoingNotification("Listening for \"Hey Anni\"...")
     }
 
     private fun handleVoiceRejected() {
         JarvisChimePlayer.playDeniedChime()
         JarvisRuntimeState.setVoiceBadge("Unauthorized Voice Blocked ✗")
-        val msg = "Awaz match nahi hui. Sirf owner ki awaz par hi kaam karta hu."
+        val msg = "Awaz match nahi hui. Sirf owner ki awaz par hi kaam karti hu."
         JarvisRuntimeState.updateMode(AssistantMode.DENIED, msg)
         JarvisRuntimeState.setReplyOnly(msg)
         speakSync(msg)
         JarvisRuntimeState.updateMode(
             AssistantMode.PASSIVE_WAKE,
-            "Say \"Hey Jarvis\" anytime (Lock-Screen Ready)"
+            "Say \"Hey Anni\" anytime (Lock-Screen Ready)"
         )
-        updateOngoingNotification("Listening for \"Hey Jarvis\"...")
+        updateOngoingNotification("Listening for \"Hey Anni\"...")
     }
 
     private fun listenWithAndroidSttBlocking(): String? {
@@ -650,7 +648,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
 
         val alertNotif = NotificationCompat.Builder(this, JarvisApp.CHANNEL_LOCK_OVERLAY)
             .setSmallIcon(R.drawable.ic_mic_notif)
-            .setContentTitle("J.A.R.V.I.S. Listening")
+            .setContentTitle("A.N.N.I. Listening")
             .setContentText("Speak your command...")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_CALL)
@@ -678,11 +676,11 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
     private fun speakSync(text: String) {
         if (!ttsReady || tts == null || text.isBlank()) return
         val clean = text.replace(Regex("[*_#`~\\[\\]()]"), " ").trim()
-        JarvisRuntimeState.updateMode(AssistantMode.SPEAKING, "J.A.R.V.I.S. Speaking...")
+        JarvisRuntimeState.updateMode(AssistantMode.SPEAKING, "Anni Speaking...")
         isSpeaking = true
 
         val latch = CountDownLatch(1)
-        val uttId = "jarvis_${System.currentTimeMillis()}"
+        val uttId = "anni_${System.currentTimeMillis()}"
 
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {}
@@ -703,7 +701,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
     private fun stopAll() {
         running = false
         JarvisRuntimeState.setServiceRunning(false)
-        JarvisRuntimeState.updateMode(AssistantMode.STOPPED, "J.A.R.V.I.S. paused")
+        JarvisRuntimeState.updateMode(AssistantMode.STOPPED, "A.N.N.I. paused")
         closeAudioRecord()
     }
 

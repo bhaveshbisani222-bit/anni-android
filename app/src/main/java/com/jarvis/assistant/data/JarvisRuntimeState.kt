@@ -63,7 +63,7 @@ object JarvisRuntimeState {
         _uiState.update { current ->
             val updated = (current.history + listOf(
                 ConversationEntry("You", userText),
-                ConversationEntry("J.A.R.V.I.S.", jarvisReply)
+                ConversationEntry("A.N.N.I.", jarvisReply)
             )).takeLast(30)
             current.copy(
                 lastHeardText = userText,
@@ -75,7 +75,7 @@ object JarvisRuntimeState {
 
     fun setReplyOnly(jarvisReply: String) {
         _uiState.update { current ->
-            val updated = (current.history + ConversationEntry("J.A.R.V.I.S.", jarvisReply)).takeLast(30)
+            val updated = (current.history + ConversationEntry("A.N.N.I.", jarvisReply)).takeLast(30)
             current.copy(lastReplyText = jarvisReply, history = updated)
         }
     }

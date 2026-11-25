@@ -121,7 +121,7 @@ object JarvisApiClient {
         val appsHint = installedApps.take(30).joinToString(", ")
 
         val instruction = """
-You are J.A.R.V.I.S., a Siri-like personal voice assistant on $userName's Android phone.
+You are Anni (A.N.N.I.), a Siri-like personal voice assistant on $userName's Android phone.
 Listen to the audio command (Hindi, Hinglish, or English) and output ONLY valid JSON (no markdown) with these keys:
 - "transcript": exact words spoken by user
 - "intent": one of ["call","whatsapp","sms","alarm","timer","torch","open_app","play_music","maps","volume","media","wifi","bluetooth","notifications","battery","time","date","weather","search","add_task","add_note","chat"]

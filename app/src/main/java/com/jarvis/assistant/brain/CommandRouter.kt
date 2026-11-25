@@ -77,14 +77,14 @@ class CommandRouter(private val context: Context) {
         // 5. Alarm
         if (clean.contains("alarm")) {
             val (h, m) = parseHourMinute(clean)
-            val reply = executor.setAlarm(h, m, "J.A.R.V.I.S. Alarm", userName)
+            val reply = executor.setAlarm(h, m, "Anni Alarm", userName)
             return CommandExecutionOutcome(rawText, reply)
         }
 
         // 6. Timer
         if (clean.contains("timer")) {
             val sec = parseDurationSeconds(clean)
-            val reply = executor.setTimer(sec, "J.A.R.V.I.S. Timer", userName)
+            val reply = executor.setTimer(sec, "Anni Timer", userName)
             return CommandExecutionOutcome(rawText, reply)
         }
 
@@ -201,11 +201,11 @@ class CommandRouter(private val context: Context) {
                 val parts = value.split(":")
                 val h = parts.getOrNull(0)?.toIntOrNull() ?: 7
                 val m = parts.getOrNull(1)?.toIntOrNull() ?: 0
-                executor.setAlarm(h, m, target.ifBlank { "J.A.R.V.I.S. Alarm" }, userName)
+                executor.setAlarm(h, m, target.ifBlank { "Anni Alarm" }, userName)
             }
             "timer" -> {
                 val sec = value.filter { it.isDigit() }.toIntOrNull() ?: 60
-                executor.setTimer(sec, target.ifBlank { "J.A.R.V.I.S. Timer" }, userName)
+                executor.setTimer(sec, target.ifBlank { "Anni Timer" }, userName)
             }
             "open_app" -> executor.openApp(target, userName)
             "play_music" -> executor.playMusicQuery(target, userName)

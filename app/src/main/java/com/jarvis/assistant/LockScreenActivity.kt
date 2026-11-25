@@ -147,7 +147,7 @@ fun LockScreenHud(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "J.A.R.V.I.S. • LOCK-SCREEN HUD",
+                text = "A.N.N.I. • LOCK-SCREEN HUD",
                 color = accentColor,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
@@ -188,7 +188,7 @@ fun LockScreenHud(
                 }
                 Icon(
                     imageVector = Icons.Default.Mic,
-                    contentDescription = "JARVIS Mic",
+                    contentDescription = "ANNI Mic",
                     tint = Color.White,
                     modifier = Modifier.size(44.dp)
                 )

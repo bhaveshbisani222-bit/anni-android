@@ -22,19 +22,19 @@ class JarvisApp : Application() {
 
             val bgChannel = NotificationChannel(
                 CHANNEL_WAKE_SERVICE,
-                "J.A.R.V.I.S. Wake Listener",
+                "A.N.N.I. Wake Listener",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Keeps Hey Jarvis active even when phone is locked"
+                description = "Keeps Hey Anni active even when phone is locked"
                 setShowBadge(false)
             }
 
             val lockChannel = NotificationChannel(
                 CHANNEL_LOCK_OVERLAY,
-                "J.A.R.V.I.S. Lock Screen Activation",
+                "A.N.N.I. Lock Screen Activation",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Wakes display when Hey Jarvis is spoken"
+                description = "Wakes display when Hey Anni is spoken"
                 setSound(null, null)
             }
 

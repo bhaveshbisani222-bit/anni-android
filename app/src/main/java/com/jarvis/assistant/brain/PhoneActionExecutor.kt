@@ -131,7 +131,7 @@ class PhoneActionExecutor(private val context: Context) {
         val intent = Intent(AlarmClock.ACTION_SET_ALARM).apply {
             putExtra(AlarmClock.EXTRA_HOUR, hour.coerceIn(0, 23))
             putExtra(AlarmClock.EXTRA_MINUTES, minute.coerceIn(0, 59))
-            putExtra(AlarmClock.EXTRA_MESSAGE, label.ifBlank { "J.A.R.V.I.S. Alarm" })
+            putExtra(AlarmClock.EXTRA_MESSAGE, label.ifBlank { "Anni Alarm" })
             putExtra(AlarmClock.EXTRA_SKIP_UI, true)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
@@ -148,7 +148,7 @@ class PhoneActionExecutor(private val context: Context) {
         val safeSeconds = seconds.coerceAtLeast(5)
         val intent = Intent(AlarmClock.ACTION_SET_TIMER).apply {
             putExtra(AlarmClock.EXTRA_LENGTH, safeSeconds)
-            putExtra(AlarmClock.EXTRA_MESSAGE, label.ifBlank { "J.A.R.V.I.S. Timer" })
+            putExtra(AlarmClock.EXTRA_MESSAGE, label.ifBlank { "Anni Timer" })
             putExtra(AlarmClock.EXTRA_SKIP_UI, true)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }

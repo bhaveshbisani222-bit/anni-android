@@ -1,4 +1,4 @@
-name: Build JARVIS Android APK
+name: Build ANNI Android APK
 
 on:
   push:
@@ -49,7 +49,7 @@ jobs:
           tar jxf "${KWS_DIR}.tar.bz2"
           rm -f "${KWS_DIR}.tar.bz2"
 
-          # Generate custom wake-word tokens for JARVIS using sentencepiece directly
+          # Generate custom wake-word tokens for ANNI using sentencepiece directly
           python3 -m pip install sentencepiece
           python3 - << 'PYEOF'
           import sentencepiece as spm
@@ -62,10 +62,13 @@ jobs:
           sp.load(f"{kws_dir}/bpe.model")
 
           phrases = [
-              ("HEY JARVIS", ":1.5", "#0.25", "@HEY_JARVIS"),
-              ("OK JARVIS", ":1.5", "#0.25", "@OK_JARVIS"),
-              ("HELLO JARVIS", ":1.5", "#0.25", "@HELLO_JARVIS"),
-              ("JARVIS", ":1.2", "#0.35", "@JARVIS"),
+              ("HEY ANNI", ":1.5", "#0.25", "@HEY_ANNI"),
+              ("HEY ANNIE", ":1.5", "#0.25", "@HEY_ANNIE"),
+              ("OK ANNI", ":1.5", "#0.25", "@OK_ANNI"),
+              ("OK ANNIE", ":1.5", "#0.25", "@OK_ANNIE"),
+              ("HELLO ANNI", ":1.5", "#0.25", "@HELLO_ANNI"),
+              ("ANNI", ":1.2", "#0.35", "@ANNI"),
+              ("ANNIE", ":1.2", "#0.35", "@ANNIE"),
           ]
 
           lines = []
@@ -104,9 +107,9 @@ jobs:
       - name: Build Debug APK
         run: gradle assembleDebug --no-daemon
 
-      - name: Upload JARVIS APK Artifact
+      - name: Upload ANNI APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-AI-Android-APK
+          name: ANNI-AI-Android-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30

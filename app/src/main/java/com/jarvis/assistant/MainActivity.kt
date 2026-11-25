@@ -206,7 +206,7 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
         ) {
             Column {
                 Text(
-                    text = "J.A.R.V.I.S. ANDROID",
+                    text = "A.N.N.I. ANDROID",
                     color = Color(0xFF06B6D4),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
@@ -390,7 +390,7 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
                 }
 
                 Text(
-                    text = "Saved Voice Samples: ${ui.enrolledSamples} (3 samples recommend kiye jaate hain). Jab ye ON rahega, kisi aur ki awaz par JARVIS reject kar dega.",
+                    text = "Saved Voice Samples: ${ui.enrolledSamples} (3 samples recommend kiye jaate hain). Jab ye ON rahega, kisi aur ki awaz par Anni reject kar dega.",
                     color = Color(0xFF94A3B8),
                     fontSize = 12.sp
                 )
@@ -434,7 +434,7 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
                                 JarvisWakeService.startService(context, JarvisWakeService.ACTION_ENROLL_SAMPLE)
                                 Toast.makeText(
                                     context,
-                                    "3.5 seconds tak saaf bolein: 'Hey Jarvis, call Mom and check weather'",
+                                    "3.5 seconds tak saaf bolein: 'Hey Anni, call Mom and check weather'",
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -533,7 +533,7 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("5. Set J.A.R.V.I.S. as Default Digital Assistant", fontSize = 12.sp, color = Color(0xFF38BDF8))
+                    Text("5. Set A.N.N.I. as Default Digital Assistant", fontSize = 12.sp, color = Color(0xFF38BDF8))
                 }
             }
         }
@@ -563,7 +563,7 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
                 OutlinedTextField(
                     value = backendUrl,
                     onValueChange = { backendUrl = it },
-                    label = { Text("JARVIS Cloud URL") },
+                    label = { Text("A.N.N.I. Cloud URL") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
