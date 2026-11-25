@@ -1,0 +1,95 @@
+name: Build JARVIS Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Accept Android SDK Licenses
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses || true
+          fi
+
+      - name: Download Sherpa-ONNX AAR (v2.0.3)
+        run: |
+          mkdir -p app/libs
+          curl -fSL -o app/libs/sherpa-onnx-2.0.3.aar \
+            https://github.com/k2-fsa/sherpa-onnx/releases/download/v2.0.3/sherpa-onnx-2.0.3.aar
+          ls -lh app/libs/sherpa-onnx-2.0.3.aar
+
+      - name: Download KWS & Speaker Verification Models
+        run: |
+          mkdir -p app/src/main/assets
+
+          # 1. English Keyword Spotting (Wake-Word) Model
+          KWS_DIR="sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01"
+          curl -fSL -o "${KWS_DIR}.tar.bz2" \
+            "https://github.com/k2-fsa/sherpa-onnx/releases/download/kws-models/${KWS_DIR}.tar.bz2"
+          tar jxf "${KWS_DIR}.tar.bz2"
+          rm -f "${KWS_DIR}.tar.bz2"
+
+          # Generate custom wake-word tokens for JARVIS
+          python3 -m pip install --upgrade pip sherpa-onnx sentencepiece
+          curl -fSL -o text2token.py \
+            https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/v2.0.3/scripts/text2token.py
+
+          printf "HEY JARVIS :1.5 #0.25 @HEY_JARVIS\nOK JARVIS :1.5 #0.25 @OK_JARVIS\nHELLO JARVIS :1.5 #0.25 @HELLO_JARVIS\nJARVIS :1.2 #0.35 @JARVIS\n" > keywords_raw.txt
+
+          python3 text2token.py \
+            --text keywords_raw.txt \
+            --tokens "${KWS_DIR}/tokens.txt" \
+            --tokens-type bpe \
+            --bpe-model "${KWS_DIR}/bpe.model" \
+            --output "${KWS_DIR}/keywords.txt"
+
+          echo "=== Generated Wake Keywords ==="
+          cat "${KWS_DIR}/keywords.txt"
+
+          rm -f text2token.py keywords_raw.txt
+          rm -f "${KWS_DIR}/bpe.model" "${KWS_DIR}/keywords_raw.txt" "${KWS_DIR}/README.md"
+          rm -f "${KWS_DIR}"/*.int8.onnx
+          rm -rf "${KWS_DIR}/test_wavs"
+          mv "${KWS_DIR}" "app/src/main/assets/${KWS_DIR}"
+
+          # 2. English Speaker Verification (Voiceprint) Model (CAM++)
+          curl -fSL -o "app/src/main/assets/3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx" \
+            "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx"
+
+          ls -lh app/src/main/assets/
+          ls -lh "app/src/main/assets/${KWS_DIR}/"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.4'
+
+      - name: Build Debug APK
+        run: gradle assembleDebug --no-daemon
+
+      - name: Upload JARVIS APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS-AI-Android-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
