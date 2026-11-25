@@ -116,12 +116,31 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
+      - name: Rename APK for Release
+        run: cp app/build/outputs/apk/debug/app-debug.apk ANNI-AI.apk
+
       - name: Publish Direct APK Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          cp app/build/outputs/apk/debug/app-debug.apk ANNI-AI.apk
-          gh release delete v1.0.0 -y || true
-          gh release create v1.0.0 ANNI-AI.apk \
-            --title "A.N.N.I. AI Android v1.0.0" \
-            --notes "Direct APK download for Android phone (Hey Anni + Voiceprint + Lock Screen Siri Assistant)"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "A.N.N.I. AI Android v1.0.0"
+          body: |
+            ## 🤖 A.N.N.I. AI Android App
+            
+            **Direct APK Download — Install on your Android phone!**
+            
+            ### Features:
+            - 🎙️ Wake word: "Hey Anni" / "Anni" (works on lock screen)
+            - 🔐 Owner voiceprint verification (only your voice)
+            - 📱 Siri-style phone commands (calls, alarms, WhatsApp, torch, apps)
+            - 🧠 Connected to ANNI AI cloud backend
+            
+            ### How to install:
+            1. Download `ANNI-AI.apk` below
+            2. Open it on your phone
+            3. Allow "Install from unknown sources"
+            4. Tap Install → Open → Grant all permissions
+            5. Say **"Hey Anni"** to test!
+          files: ANNI-AI.apk
+          make_latest: true
+          prerelease: false
