@@ -36,6 +36,10 @@ class JarvisPrefs(context: Context) {
         get() = prefs.getBoolean(KEY_WAKE_WORD_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_WAKE_WORD_ENABLED, value).apply()
 
+    var silentBackgroundMode: Boolean
+        get() = prefs.getBoolean(KEY_SILENT_BG_MODE, true)
+        set(value) = prefs.edit().putBoolean(KEY_SILENT_BG_MODE, value).apply()
+
     fun getOwnerEmbeddings(): List<FloatArray> {
         val raw = prefs.getString(KEY_OWNER_EMBEDDINGS, null) ?: return emptyList()
         return try {
@@ -89,6 +93,7 @@ class JarvisPrefs(context: Context) {
         private const val KEY_VOICE_THRESHOLD = "voice_threshold"
         private const val KEY_VOICE_LOCK_ENABLED = "voice_lock_enabled"
         private const val KEY_WAKE_WORD_ENABLED = "wake_word_enabled"
+        private const val KEY_SILENT_BG_MODE = "silent_background_mode"
         private const val KEY_OWNER_EMBEDDINGS = "owner_embeddings"
     }
 }
