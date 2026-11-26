@@ -162,7 +162,18 @@ class CommandRouter(private val context: Context) {
             return CommandExecutionOutcome(rawText, "Note save kar liya hai, $userName.")
         }
 
-        // 14. Open Any Installed App
+        // 14. YouTube Video / Show Search & Play
+        if (clean.contains("youtube")) {
+            val ytQuery = clean
+                .replace(Regex("\\b(open|launch|kholo|start|on|pe|par|in|mein|me|youtube|play|chalao|lagao|search|dikhao|dekho)\\b"), " ")
+                .replace(Regex("\\s+"), " ")
+                .trim()
+            if (ytQuery.isNotBlank()) {
+                return CommandExecutionOutcome(rawText, executor.playYouTubeQuery(ytQuery, userName))
+            }
+        }
+
+        // 15. Open Any Installed App
         val openMatch = Regex("(?:open|launch|kholo|chalao)\\s+([a-zA-Z0-9\\s]+)").find(clean)
         if (openMatch != null) {
             val appTarget = openMatch.groupValues[1].trim()
@@ -208,6 +219,7 @@ class CommandRouter(private val context: Context) {
                 executor.setTimer(sec, target.ifBlank { "Anni Timer" }, userName)
             }
             "open_app" -> executor.openApp(target, userName)
+            "youtube_play" -> executor.playYouTubeQuery(target, userName)
             "play_music" -> executor.playMusicQuery(target, userName)
             "maps" -> executor.openMapsNavigation(target, userName)
             "volume" -> executor.adjustVolume(value.ifBlank { "up" }, userName)
