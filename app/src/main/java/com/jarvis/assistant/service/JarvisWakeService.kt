@@ -702,6 +702,13 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun wakeScreenAndShowOverlay() {
+        val km = getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
+        val isLocked = km.isKeyguardLocked
+        if (prefs.silentBackgroundMode && !isLocked) {
+            // Silent background mode: phone unlocked hai toh screen overlay pop nahi karega
+            return
+        }
+
         val lockIntent = Intent(this, LockScreenActivity::class.java).apply {
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
