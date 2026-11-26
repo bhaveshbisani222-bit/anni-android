@@ -28,6 +28,8 @@ data class RuntimeUiState(
     val lastReplyText: String = "At your service, Sir.",
     val voiceStatusBadge: String = "Not Verified Yet",
     val enrolledSamples: Int = 0,
+    val isEnrolling: Boolean = false,
+    val enrollFeedback: String = "",
     val isServiceRunning: Boolean = false,
     val history: List<ConversationEntry> = emptyList()
 )
@@ -36,6 +38,14 @@ data class RuntimeUiState(
  * Shared live state observed by MainActivity, LockScreenActivity, and JarvisWakeService.
  */
 object JarvisRuntimeState {
+    val ENROLL_PROMPTS = listOf(
+        "\"Hey Anni\"",
+        "\"Hey Anni, aaj ka mausam kaisa hai?\"",
+        "\"Hey Anni, paanch minute ka timer lagao\"",
+        "\"Ok Anni, gaana bajao\"",
+        "\"Hello Anni, main aapka owner bol raha hoon\""
+    )
+
     private val _uiState = MutableStateFlow(RuntimeUiState())
     val uiState: StateFlow<RuntimeUiState> = _uiState.asStateFlow()
 
@@ -49,6 +59,10 @@ object JarvisRuntimeState {
 
     fun setEnrolledCount(count: Int) {
         _uiState.update { it.copy(enrolledSamples = count) }
+    }
+
+    fun setEnrolling(enrolling: Boolean, feedback: String = "") {
+        _uiState.update { it.copy(isEnrolling = enrolling, enrollFeedback = feedback) }
     }
 
     fun setVoiceBadge(badge: String) {
