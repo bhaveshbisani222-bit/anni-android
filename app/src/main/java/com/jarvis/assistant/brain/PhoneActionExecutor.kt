@@ -218,6 +218,24 @@ class PhoneActionExecutor(private val context: Context) {
         }
     }
 
+    fun playYouTubeQuery(query: String, userName: String): String {
+        val cleanQuery = query.trim()
+        if (cleanQuery.isBlank()) return openApp("YouTube", userName)
+        return try {
+            val ytIntent = Intent(Intent.ACTION_SEARCH).apply {
+                setPackage("com.google.android.youtube")
+                putExtra(SearchManager.QUERY, cleanQuery)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(ytIntent)
+            "YouTube par $cleanQuery search aur play kar raha hu, $userName."
+        } catch (_: Exception) {
+            val encoded = URLEncoder.encode(cleanQuery, "UTF-8")
+            openUrl("https://www.youtube.com/results?search_query=$encoded")
+            "YouTube par $cleanQuery open kar raha hu, $userName."
+        }
+    }
+
     fun openSettingsPanel(panelType: String, userName: String): String {
         val intent = when (panelType.lowercase()) {
             "wifi", "wi-fi" -> {
