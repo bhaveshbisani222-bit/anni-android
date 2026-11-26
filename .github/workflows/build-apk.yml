@@ -64,13 +64,18 @@ jobs:
           sp.load(f"{kws_dir}/bpe.model")
 
           phrases = [
-              ("HEY ANNI", ":1.5", "#0.25", "@HEY_ANNI"),
-              ("HEY ANNIE", ":1.5", "#0.25", "@HEY_ANNIE"),
-              ("OK ANNI", ":1.5", "#0.25", "@OK_ANNI"),
-              ("OK ANNIE", ":1.5", "#0.25", "@OK_ANNIE"),
-              ("HELLO ANNI", ":1.5", "#0.25", "@HELLO_ANNI"),
-              ("ANNI", ":1.2", "#0.35", "@ANNI"),
-              ("ANNIE", ":1.2", "#0.35", "@ANNIE"),
+              ("HEY ANNI", ":2.2", "#0.10", "@HEY_ANNI"),
+              ("HEY ANNIE", ":2.2", "#0.10", "@HEY_ANNIE"),
+              ("HEY ANI", ":2.2", "#0.10", "@HEY_ANI"),
+              ("HEY ANNY", ":2.2", "#0.10", "@HEY_ANNY"),
+              ("HEY ANY", ":2.0", "#0.12", "@HEY_ANY"),
+              ("OK ANNI", ":2.2", "#0.10", "@OK_ANNI"),
+              ("OK ANNIE", ":2.2", "#0.10", "@OK_ANNIE"),
+              ("HELLO ANNI", ":2.2", "#0.10", "@HELLO_ANNI"),
+              ("ANNI", ":1.8", "#0.15", "@ANNI"),
+              ("ANNIE", ":1.8", "#0.15", "@ANNIE"),
+              ("ANI", ":1.8", "#0.15", "@ANI"),
+              ("ANNY", ":1.8", "#0.15", "@ANNY"),
           ]
 
           lines = []
@@ -122,8 +127,8 @@ jobs:
       - name: Publish Direct APK Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: "A.N.N.I. AI Android v1.0.0"
+          tag_name: v1.0.1
+          name: "A.N.N.I. AI Android v1.0.1"
           body: |
             ## 🤖 A.N.N.I. AI Android App
             
