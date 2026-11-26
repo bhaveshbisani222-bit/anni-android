@@ -270,16 +270,20 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun handleVoiceEnrollmentFlow() {
+        val currentStep = prefs.getEnrolledSampleCount().coerceAtMost(JarvisRuntimeState.ENROLL_PROMPTS.size - 1)
+        val promptToSay = JarvisRuntimeState.ENROLL_PROMPTS[currentStep]
+        JarvisRuntimeState.setEnrolling(true, "Boliye: $promptToSay")
         JarvisRuntimeState.updateMode(
             AssistantMode.LISTENING_COMMAND,
-            "Recording voiceprint (3.5s)... Speak clearly!"
+            "Voice Match (${currentStep + 1}/${JarvisRuntimeState.ENROLL_PROMPTS.size}): Speak $promptToSay"
         )
         JarvisChimePlayer.playWakeChime()
-        Thread.sleep(250)
+        Thread.sleep(280)
 
-        val samples = recordFixedDuration(3500)
-        if (samples.size < JarvisAudioEngine.SAMPLE_RATE) {
-            JarvisRuntimeState.updateMode(AssistantMode.PASSIVE_WAKE, "Voice too short, try again")
+        val samples = captureEnrollmentSpeechWithVad(maxMs = 5500)
+        if (samples.size < JarvisAudioEngine.SAMPLE_RATE * 6 / 10) {
+            JarvisRuntimeState.setEnrolling(false, "Awaz clear nahi aayi — dubara try karein!")
+            JarvisRuntimeState.updateMode(AssistantMode.PASSIVE_WAKE, "Voice too short or quiet, try again")
             speakSync("Awaz clear record nahi hui. Kripya dubara bolein.")
             return
         }
@@ -287,10 +291,23 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
         val count = JarvisAudioEngine.enrollOwnerSample(samples, prefs)
         if (count > 0) {
             JarvisRuntimeState.setEnrolledCount(count)
-            JarvisRuntimeState.setVoiceBadge("Voiceprint Saved ($count samples)")
+            val total = JarvisRuntimeState.ENROLL_PROMPTS.size
+            val feedbackMsg = if (count >= total) {
+                "Voice Match Complete! ($count/$total) ✅"
+            } else {
+                "Sample $count/$total saved! Ab next phrase bolein."
+            }
+            JarvisRuntimeState.setEnrolling(false, feedbackMsg)
+            JarvisRuntimeState.setVoiceBadge("Voice Match ($count/$total)")
             JarvisChimePlayer.playSuccessChime()
-            speakSync("Voice sample $count save ho gaya hai, ${prefs.userName}.")
+            val spoken = if (count >= total) {
+                "Voice Match complete ho gaya hai, ${prefs.userName}. Ab main sirf aapki awaaz pe kaam karungi."
+            } else {
+                "Sample $count save ho gaya hai."
+            }
+            speakSync(spoken)
         } else {
+            JarvisRuntimeState.setEnrolling(false, "Voice sample save karne me error aaya.")
             speakSync("Voice sample save karne me error aaya.")
         }
 
@@ -298,6 +315,68 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
             AssistantMode.PASSIVE_WAKE,
             "Say \"Hey Anni\" anytime (Lock-Screen Ready)"
         )
+    }
+
+    /**
+     * Captures only active speech (trims leading & trailing silence) for clean Siri/Gemini-style voiceprints.
+     */
+    private fun captureEnrollmentSpeechWithVad(maxMs: Int): FloatArray {
+        val sampleRate = JarvisAudioEngine.SAMPLE_RATE
+        val chunk = ShortArray(1600) // 100ms
+        val speechChunks = ArrayList<FloatArray>()
+        val preBuffer = ArrayDeque<FloatArray>(2)
+
+        val maxChunks = maxMs / 100
+        var speechStarted = false
+        var activeSpeechChunks = 0
+        var silentChunksAfterSpeech = 0
+
+        for (i in 0 until maxChunks) {
+            if (!running) break
+            val n = audioRecord?.read(chunk, 0, chunk.size) ?: break
+            if (n <= 0) continue
+
+            val fChunk = FloatArray(n)
+            var sumSq = 0.0
+            for (j in 0 until n) {
+                val f = chunk[j] / 32768.0f
+                fChunk[j] = f
+                sumSq += f * f
+            }
+            val rms = sqrt(sumSq / n)
+
+            if (rms > 0.020) {
+                if (!speechStarted) {
+                    speechStarted = true
+                    while (preBuffer.isNotEmpty()) {
+                        speechChunks.add(preBuffer.removeFirst())
+                    }
+                }
+                speechChunks.add(fChunk)
+                activeSpeechChunks++
+                silentChunksAfterSpeech = 0
+            } else if (speechStarted) {
+                if (silentChunksAfterSpeech < 3) {
+                    speechChunks.add(fChunk)
+                }
+                silentChunksAfterSpeech++
+                if (silentChunksAfterSpeech >= 9) break
+            } else {
+                if (preBuffer.size >= 2) preBuffer.removeFirst()
+                preBuffer.addLast(fChunk)
+                if (i >= 40) break // 4s wait for user to start speaking
+            }
+        }
+
+        if (activeSpeechChunks < 5) return FloatArray(0)
+        val totalSize = speechChunks.sumOf { it.size }
+        val out = FloatArray(totalSize)
+        var pos = 0
+        for (c in speechChunks) {
+            c.copyInto(out, pos)
+            pos += c.size
+        }
+        return out
     }
 
     private fun handleActivatedSession(wakeSnapshot: FloatArray, verifyWakeSnapshotFirst: Boolean) {
