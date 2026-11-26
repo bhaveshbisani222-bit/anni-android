@@ -60,9 +60,9 @@ object JarvisAudioEngine {
                             modelType = "zipformer2"
                         ),
                         keywordsFile = "$KWS_MODEL_DIR/keywords.txt",
-                        keywordsScore = 1.5f,
-                        keywordsThreshold = 0.25f,
-                        numTrailingBlanks = 2
+                        keywordsScore = 2.0f,
+                        keywordsThreshold = 0.10f,
+                        numTrailingBlanks = 1
                     )
                     keywordSpotter = KeywordSpotter(assetManager = appCtx.assets, config = kwsConfig)
                 }
