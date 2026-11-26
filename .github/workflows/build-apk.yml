@@ -64,18 +64,23 @@ jobs:
           sp.load(f"{kws_dir}/bpe.model")
 
           phrases = [
-              ("HEY ANNI", ":2.2", "#0.10", "@HEY_ANNI"),
-              ("HEY ANNIE", ":2.2", "#0.10", "@HEY_ANNIE"),
-              ("HEY ANI", ":2.2", "#0.10", "@HEY_ANI"),
-              ("HEY ANNY", ":2.2", "#0.10", "@HEY_ANNY"),
-              ("HEY ANY", ":2.0", "#0.12", "@HEY_ANY"),
-              ("OK ANNI", ":2.2", "#0.10", "@OK_ANNI"),
-              ("OK ANNIE", ":2.2", "#0.10", "@OK_ANNIE"),
-              ("HELLO ANNI", ":2.2", "#0.10", "@HELLO_ANNI"),
-              ("ANNI", ":1.8", "#0.15", "@ANNI"),
-              ("ANNIE", ":1.8", "#0.15", "@ANNIE"),
-              ("ANI", ":1.8", "#0.15", "@ANI"),
-              ("ANNY", ":1.8", "#0.15", "@ANNY"),
+              ("HEY ANNI", ":2.4", "#0.07", "@HEY_ANNI"),
+              ("HEY ANNIE", ":2.4", "#0.07", "@HEY_ANNIE"),
+              ("HEY ANI", ":2.4", "#0.07", "@HEY_ANI"),
+              ("HEY ANNY", ":2.4", "#0.07", "@HEY_ANNY"),
+              ("HEY ANEE", ":2.4", "#0.07", "@HEY_ANEE"),
+              ("HEY ENNY", ":2.4", "#0.08", "@HEY_ENNY"),
+              ("HEY ANY", ":2.2", "#0.08", "@HEY_ANY"),
+              ("HEY HONEY", ":2.2", "#0.08", "@HEY_HONEY"),
+              ("HEY ARNIE", ":2.2", "#0.08", "@HEY_ARNIE"),
+              ("OK ANNI", ":2.4", "#0.07", "@OK_ANNI"),
+              ("OK ANNIE", ":2.4", "#0.07", "@OK_ANNIE"),
+              ("HELLO ANNI", ":2.4", "#0.07", "@HELLO_ANNI"),
+              ("ANNI", ":2.0", "#0.10", "@ANNI"),
+              ("ANNIE", ":2.0", "#0.10", "@ANNIE"),
+              ("ANI", ":2.0", "#0.10", "@ANI"),
+              ("ANNY", ":2.0", "#0.10", "@ANNY"),
+              ("ANEE", ":2.0", "#0.10", "@ANEE"),
           ]
 
           lines = []
@@ -156,8 +161,8 @@ jobs:
       - name: Publish Direct APK Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.4
-          name: "A.N.N.I. AI Android v1.0.4"
+          tag_name: v1.0.5
+          name: "A.N.N.I. AI Android v1.0.5"
           body: |
             ## 🤖 A.N.N.I. AI Android App
             
