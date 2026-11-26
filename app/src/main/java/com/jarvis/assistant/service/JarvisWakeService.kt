@@ -240,7 +240,9 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
                         continue
                     }
 
-                    val floatSamples = FloatArray(readCount) { shortBuf[it] / 32768.0f }
+                    val floatSamples = FloatArray(readCount) {
+                        ((shortBuf[it] / 32768.0f) * 1.8f).coerceIn(-1.0f, 1.0f)
+                    }
 
                     for (s in floatSamples) {
                         ringBuffer[ringCursor] = s
@@ -390,13 +392,19 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
         if (useGeminiAudio) {
             // Mode 1: Record command PCM -> Check Voiceprint -> Send WAV directly to Gemini Audio
             JarvisRuntimeState.updateMode(AssistantMode.LISTENING_COMMAND, "Listening...")
-            Thread.sleep(260) // Let wake chime finish
-            val commandSamples = captureCommandWithVad(maxMs = 7000)
+            Thread.sleep(240) // Let wake chime finish
+            var commandSamples = captureCommandWithVad(maxMs = 7000)
 
             if (commandSamples.size < JarvisAudioEngine.SAMPLE_RATE / 2) {
-                JarvisRuntimeState.updateMode(AssistantMode.PASSIVE_WAKE, "Nothing heard. Ready.")
-                updateOngoingNotification("Listening for \"Hey Anni\"...")
-                return
+                // Siri-style follow-up: user said "Hey Anni" and waited for response
+                speakSync("Haan ${prefs.userName}, boliye?")
+                JarvisRuntimeState.updateMode(AssistantMode.LISTENING_COMMAND, "Listening...")
+                commandSamples = captureCommandWithVad(maxMs = 6500)
+                if (commandSamples.size < JarvisAudioEngine.SAMPLE_RATE / 2) {
+                    JarvisRuntimeState.updateMode(AssistantMode.PASSIVE_WAKE, "Nothing heard. Ready.")
+                    updateOngoingNotification("Listening for \"Hey Anni\"...")
+                    return
+                }
             }
 
             if (prefs.voiceLockEnabled && prefs.getEnrolledSampleCount() > 0) {
@@ -428,7 +436,7 @@ class JarvisWakeService : Service(), TextToSpeech.OnInitListener {
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Gemini audio failed", e)
-                    outcomeReply = "Internet ya Gemini API me dikkat aa rahi hai, ${prefs.userName}."
+                    outcomeReply = "Gemini API error: ${e.message ?: "Network dikkat"}, ${prefs.userName}."
                 } finally {
                     latch.countDown()
                 }
