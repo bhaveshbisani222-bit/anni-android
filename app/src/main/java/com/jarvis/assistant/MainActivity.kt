@@ -523,8 +523,7 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
                                             val apkFile = AppUpdater.downloadAndInstallApk(context, url) { pct ->
                                                 downloadProgress = pct
                                             }
-                                            updateStatusMsg = "Opening installer..."
-                                            AppUpdater.launchApkInstaller(context, apkFile)
+                                            updateStatusMsg = AppUpdater.launchApkInstaller(context, apkFile)
                                         } catch (e: Exception) {
                                             updateStatusMsg = "Update failed: ${e.message}"
                                         } finally {
