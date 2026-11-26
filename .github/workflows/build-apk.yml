@@ -111,7 +111,35 @@ jobs:
         with:
           gradle-version: '8.4'
 
+      - name: Prepare Persistent Signing Keystore
+        env:
+          ANNI_KEYSTORE_B64: ${{ secrets.ANNI_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$ANNI_KEYSTORE_B64" ]; then
+            echo "$ANNI_KEYSTORE_B64" | base64 -d > app/anni.jks
+            echo "Using persistent ANNI_KEYSTORE_B64 secret."
+          else
+            keytool -genkeypair -v -keystore app/anni.jks -alias anni \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass anni123456 -keypass anni123456 \
+              -dname "CN=ANNI AI,OU=Mobile,O=ANNI,L=IN,C=IN"
+            echo "Generated new anni.jks for persistent signing."
+          fi
+
+      - name: Upload Keystore Backup (if newly generated)
+        if: secrets.ANNI_KEYSTORE_B64 == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: anni-keystore-backup
+          path: app/anni.jks
+          retention-days: 1
+
       - name: Build Debug APK
+        env:
+          ANNI_KEYSTORE_PATH: ${{ github.workspace }}/app/anni.jks
+          ANNI_KEYSTORE_PASS: anni123456
+          ANNI_KEY_ALIAS: anni
+          ANNI_KEY_PASS: anni123456
         run: gradle assembleDebug --no-daemon
 
       - name: Upload ANNI APK Artifact
@@ -127,8 +155,8 @@ jobs:
       - name: Publish Direct APK Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.2
-          name: "A.N.N.I. AI Android v1.0.2"
+          tag_name: v1.0.3
+          name: "A.N.N.I. AI Android v1.0.3"
           body: |
             ## 🤖 A.N.N.I. AI Android App
             
