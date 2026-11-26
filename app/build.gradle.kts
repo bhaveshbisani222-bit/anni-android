@@ -11,17 +11,39 @@ android {
         applicationId = "com.jarvis.assistant"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 4
+        versionName = "1.0.3"
 
         ndk {
             abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
         }
     }
 
+    signingConfigs {
+        val ksPath = System.getenv("ANNI_KEYSTORE_PATH")
+        if (!ksPath.isNullOrBlank() && file(ksPath).exists()) {
+            create("anniRelease") {
+                storeFile = file(ksPath)
+                storePassword = System.getenv("ANNI_KEYSTORE_PASS") ?: "anni123456"
+                keyAlias = System.getenv("ANNI_KEY_ALIAS") ?: "anni"
+                keyPassword = System.getenv("ANNI_KEY_PASS") ?: "anni123456"
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            val customSign = signingConfigs.findByName("anniRelease")
+            if (customSign != null) {
+                signingConfig = customSign
+            }
+        }
         release {
             isMinifyEnabled = false
+            val customSign = signingConfigs.findByName("anniRelease")
+            if (customSign != null) {
+                signingConfig = customSign
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -40,6 +62,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
