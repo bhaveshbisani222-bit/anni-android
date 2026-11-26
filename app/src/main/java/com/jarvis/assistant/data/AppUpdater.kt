@@ -124,18 +124,22 @@ object AppUpdater {
         outFile
     }
 
-    fun launchApkInstaller(context: Context, apkFile: File) {
+    fun launchApkInstaller(context: Context, apkFile: File): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
             !context.packageManager.canRequestPackageInstalls()
         ) {
-            val permIntent = Intent(
-                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                Uri.parse("package:${context.packageName}")
-            ).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            return try {
+                val permIntent = Intent(
+                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:${context.packageName}")
+                ).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(permIntent)
+                "Permission chahiye: 'Install unknown apps' ON karein, phir dubara Install Update dabayein!"
+            } catch (e: Exception) {
+                "Settings → Apps → A.N.N.I. AI → Install unknown apps allow karein."
             }
-            context.startActivity(permIntent)
-            return
         }
 
         val uri = FileProvider.getUriForFile(
@@ -143,11 +147,27 @@ object AppUpdater {
             "${context.packageName}.fileprovider",
             apkFile
         )
-        val installIntent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        return try {
+            val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(installIntent)
+            "Installer khul gaya hai — Update pe tap karein!"
+        } catch (e: Exception) {
+            try {
+                @Suppress("DEPRECATION")
+                val fallback = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
+                    data = uri
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(fallback)
+                "Installer khul gaya hai — Update pe tap karein!"
+            } catch (e2: Exception) {
+                "Installer error: ${e2.message}. Chrome se download karke install karein."
+            }
         }
-        context.startActivity(installIntent)
     }
 
     private fun isRemoteNewer(remote: String, local: String): Boolean {
