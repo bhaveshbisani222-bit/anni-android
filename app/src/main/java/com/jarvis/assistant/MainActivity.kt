@@ -389,11 +389,71 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
                     )
                 }
 
+                val totalSteps = JarvisRuntimeState.ENROLL_PROMPTS.size
+                val currentStepIdx = ui.enrolledSamples.coerceAtMost(totalSteps - 1)
+                val nextPrompt = JarvisRuntimeState.ENROLL_PROMPTS[currentStepIdx]
+
                 Text(
-                    text = "Saved Voice Samples: ${ui.enrolledSamples} (3 samples recommend kiye jaate hain). Jab ye ON rahega, kisi aur ki awaz par Anni reject kar dega.",
-                    color = Color(0xFF94A3B8),
+                    text = if (ui.enrolledSamples >= totalSteps) {
+                        "Voice Match Complete (${ui.enrolledSamples}/$totalSteps) ✅ Sirf aapki awaz pe Anni respond karegi."
+                    } else {
+                        "Siri & Gemini Voice Match: Step ${ui.enrolledSamples + 1}/$totalSteps — neeche diya phrase saaf bolein:"
+                    },
+                    color = if (ui.enrolledSamples >= totalSteps) Color(0xFF10B981) else Color(0xFF94A3B8),
                     fontSize = 12.sp
                 )
+
+                // 5-Step Progress Dots (Siri / Gemini style)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    for (step in 0 until totalSteps) {
+                        val done = step < ui.enrolledSamples
+                        val active = step == ui.enrolledSamples && ui.isEnrolling
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(6.dp)
+                                .background(
+                                    color = when {
+                                        done -> Color(0xFF10B981)
+                                        active -> Color(0xFFF59E0B)
+                                        else -> Color(0xFF1E293B)
+                                    },
+                                    shape = RoundedCornerShape(3.dp)
+                                )
+                        )
+                    }
+                }
+
+                // Guided Phrase Box
+                Surface(
+                    color = Color(0xFF0A1120),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = if (ui.enrolledSamples >= totalSteps) "Enrolled Voiceprint Ready" else "Boliye (Step ${currentStepIdx + 1}/$totalSteps):",
+                            color = Color(0xFF64748B),
+                            fontSize = 11.sp
+                        )
+                        Text(
+                            text = if (ui.enrolledSamples >= totalSteps) "Aap chahein toh aur samples add ya reset kar sakte hain." else nextPrompt,
+                            color = Color(0xFF38BDF8),
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        )
+                        if (ui.enrollFeedback.isNotBlank()) {
+                            Text(
+                                text = ui.enrollFeedback,
+                                color = Color(0xFFF59E0B),
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -434,15 +494,21 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
                                 JarvisWakeService.startService(context, JarvisWakeService.ACTION_ENROLL_SAMPLE)
                                 Toast.makeText(
                                     context,
-                                    "3.5 seconds tak saaf bolein: 'Hey Anni, call Mom and check weather'",
+                                    "Chime ke baad bolein: $nextPrompt",
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
                         },
+                        enabled = !ui.isEnrolling,
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B), contentColor = Color.Black)
                     ) {
-                        Text("Record Voice Sample", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        val btnLabel = when {
+                            ui.isEnrolling -> "Listening..."
+                            ui.enrolledSamples >= totalSteps -> "Add Extra Sample"
+                            else -> "Record Step ${ui.enrolledSamples + 1}/$totalSteps"
+                        }
+                        Text(btnLabel, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
 
                     OutlinedButton(
@@ -450,6 +516,7 @@ fun JarvisDashboardScreen(prefs: JarvisPrefs) {
                             prefs.clearOwnerEmbeddings()
                             JarvisAudioEngine.reloadVoiceprints(prefs)
                             JarvisRuntimeState.setEnrolledCount(0)
+                            JarvisRuntimeState.setEnrolling(false, "")
                             JarvisRuntimeState.setVoiceBadge("Voiceprint Cleared")
                         },
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF4444))
