@@ -123,11 +123,12 @@ jobs:
               -keyalg RSA -keysize 2048 -validity 10000 \
               -storepass anni123456 -keypass anni123456 \
               -dname "CN=ANNI AI,OU=Mobile,O=ANNI,L=IN,C=IN"
+            echo "KEYSTORE_GENERATED=true" >> "$GITHUB_ENV"
             echo "Generated new anni.jks for persistent signing."
           fi
 
       - name: Upload Keystore Backup (if newly generated)
-        if: secrets.ANNI_KEYSTORE_B64 == ''
+        if: env.KEYSTORE_GENERATED == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: anni-keystore-backup
